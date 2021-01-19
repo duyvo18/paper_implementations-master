@@ -49,7 +49,7 @@ class CheXNet:
         # Count images in each class
         cls_cnts = [0] * len(class_map)
         for key, value in class_map.items():
-            imgs = glob.glob(train_data_path + '/' + value + "/*")
+            imgs = glob.glob(train_data_path + value + "/*")
             cls_cnts[key] = len(imgs)
 
         # compute class distribution
@@ -59,7 +59,7 @@ class CheXNet:
         # For convenience at train time, compute number of steps required to complete an epoch
         val_img_cnt = 0
         for key, value in class_map.items():
-            imgs = glob.glob(val_data_path + '/' + value + "/*")
+            imgs = glob.glob(val_data_path + value + "/*")
             val_img_cnt += len(imgs)
 
         self.train_steps = (sum(cls_cnts) // self.batch_size) + 1
@@ -156,12 +156,12 @@ class CheXNet:
 
 
 if __name__ == '__main__':
-    train_data_path = "data/train/"
-    val_data_path = "data/val/"
-    test_data_path = "data/test/"
+    train_data_path = input('Train dataset path: ')
+    val_data_path = input('Validation dataset path: ')
+    test_data_path = input('Test dataset path: ')
     class_map = {0:'NORMAL', 1:'PNEUMONIA'}
     epochs = 50
-    weights_path = "weights/"
+    weights_path = input('Weights path: ')
 
     chexNet = CheXNet()
     # Compute normal Vs Pneumonia class distribution
