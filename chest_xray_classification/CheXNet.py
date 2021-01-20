@@ -13,6 +13,7 @@ from keras.models import Model
 from keras.layers import Dense, Input, GlobalAveragePooling2D
 from keras.preprocessing.image import ImageDataGenerator
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
+from keras.metrics import Accuracy
 import glob
 
 
@@ -154,13 +155,37 @@ class CheXNet:
                     validation_data=val_generator,
                     validation_steps=self.val_steps)
 
+    def accuracy(self, test_data_path, class_map):
+    	test_datagen = ImageDataGenerator(preprocessing_function=self.imagenet_preproc)
+    	test_generator = test_datagen.flow_from_directory(
+            		test_data_path,
+            		classes=class_names,
+            		target_size=(self.input_size, self.input_size),
+            		batch_size=self.val_batch_size,
+            		class_mode='binary')
+
+    	# 1
+    	print('Method 1:')
+    	model.evaluate(test_generator)
+
+    	# 2
+    	print('Method 2:')
+    	test_accuracy = Accuracy()
+
+    	for (x, y) in test_generator:
+        	logits = Model(inputs= x, training=False)
+        	prediction = math.argmax(logits, axis=1, output_type=int32)
+        	test_accuracy(prediction, y)
+
+    	print("Test set accuracy: {:.3%}".format(test_accuracy.result()))
+
 
 if __name__ == '__main__':
     train_data_path = input('Train dataset path: ')
     val_data_path = input('Validation dataset path: ')
     test_data_path = input('Test dataset path: ')
     class_map = {0:'NORMAL', 1:'PNEUMONIA'}
-    epochs = 50
+    epochs = int(input('Epochs: '))
     weights_path = input('Weights path: ')
 
     chexNet = CheXNet()
