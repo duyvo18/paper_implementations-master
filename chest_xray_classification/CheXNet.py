@@ -129,6 +129,7 @@ class CheXNet:
             target_size=(self.input_size, self.input_size),
             batch_size=self.batch_size,
             class_mode='binary')
+        
         val_datagen = ImageDataGenerator(preprocessing_function=self.imagenet_preproc)
         val_generator = val_datagen.flow_from_directory(
             val_data_path,
@@ -144,7 +145,7 @@ class CheXNet:
 
         checkpoint = ModelCheckpoint(weights_path + 'CheXNet.h5', monitor='val_loss', verbose=1,
                                      save_best_only=True, mode='min')
-        reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=self.decay_factor)
+        reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=self.decay_factor, verbose=1)
 
         callbacks = [checkpoint, reduceLROnPlat]
 
@@ -181,19 +182,21 @@ class CheXNet:
 
 
 if __name__ == '__main__':
-    train_data_path = input('Train dataset path: ')
-    val_data_path = input('Validation dataset path: ')
-    test_data_path = input('Test dataset path: ')
+    train_data_path = '/content/drive/MyDrive/SC203 _ Group 09/Dataset/CheXpert-v1.0-2_labels/limited_train/'
+    val_data_path = '/content/drive/MyDrive/SC203 _ Group 09/Dataset/CheXpert-v1.0-2_labels/limited_valid/'
+    test_data_path = '/content/drive/MyDrive/SC203 _ Group 09/Dataset/CheXpert-v1.0-2_labels/Test/'
     class_map = {0:'NORMAL', 1:'PNEUMONIA'}
-    epochs = int(input('Epochs: '))
-    weights_path = input('Weights path: ')
+    epochs = 50
+    weights_path = '/content/drive/MyDrive/SC203 _ Group 09/VinGPan/weights/'
 
     chexNet = CheXNet()
     # Compute normal Vs Pneumonia class distribution
     chexNet.get_data_stats(train_data_path, val_data_path, class_map)
     # Create and compile the DenseNet121 model
     model = chexNet.get_model()
-    model.summary()
+    #model.summary()
 
     # Train the model
     chexNet.train(train_data_path, val_data_path, epochs, weights_path, class_map)
+
+    chexNet.accuracy()
