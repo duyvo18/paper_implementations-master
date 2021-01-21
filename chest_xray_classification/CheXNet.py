@@ -143,9 +143,9 @@ class CheXNet:
         # time the validation loss plateaus after an epoch
         # 2. pick the model with the lowest validation loss
 
-        checkpoint = ModelCheckpoint(weights_path + 'CheXNet.h5', monitor='val_loss', verbose=1,
-                                     save_best_only=True, mode='min')
-        reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=self.decay_factor, verbose=1)
+        checkpoint = ModelCheckpoint(weights_path + 'CheXNet.h5', monitor='loss', verbose=1,
+                                     save_best_only=True, save_weights_only=True, mode='min')
+        reduceLROnPlat = ReduceLROnPlateau(monitor='loss', factor=self.decay_factor, verbose=1)
 
         callbacks = [checkpoint, reduceLROnPlat]
 
@@ -194,9 +194,12 @@ if __name__ == '__main__':
     chexNet.get_data_stats(train_data_path, val_data_path, class_map)
     # Create and compile the DenseNet121 model
     model = chexNet.get_model()
-    #model.summary()
+    print('\n\tModel summary:')
+    model.summary()
 
     # Train the model
+    print('\n\tTraining model:')
     chexNet.train(train_data_path, val_data_path, epochs, weights_path, class_map)
 
-    chexNet.accuracy()
+    print('\n\tTest accuracy:')
+    chexNet.accuracy(test_data_path, class_map)
