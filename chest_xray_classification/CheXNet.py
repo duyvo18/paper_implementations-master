@@ -27,7 +27,7 @@ class CheXNet:
         self.batch_size = 16
         self.decay_factor = 1.0/10.0
 
-        self.val_batch_size = 64  # This can be set any convenient value as per GPU capacity
+        self.val_batch_size = 32  # This can be set any convenient value as per GPU capacity
 
         # Following will be set by get_data_stats() based on the dataset
         self.w_class0 = None
@@ -166,11 +166,11 @@ class CheXNet:
             		class_mode='binary')
 
     	# 1
-    	print('Method 1:')
+    	print('\tMethod 1:')
     	model.evaluate(test_generator)
 
     	# 2
-    	print('Method 2:')
+    	print('\tMethod 2:')
     	test_accuracy = Accuracy()
 
     	for (x, y) in test_generator:
