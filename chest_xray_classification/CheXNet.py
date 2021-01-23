@@ -121,8 +121,7 @@ class CheXNet:
         # 1. resize image to 224 x 224
         # 2. Use random horizontal flipping for augmenting
         # 3. normalize based on the mean and standard deviation of images in the ImageNet training set
-        train_datagen = ImageDataGenerator(horizontal_flip=True,
-                                           preprocessing_function=self.imagenet_preproc)
+        train_datagen = ImageDataGenerator(preprocessing_function=self.imagenet_preproc)
         train_generator = train_datagen.flow_from_directory(
             train_data_path,
             classes=class_names,
@@ -143,18 +142,20 @@ class CheXNet:
         # time the validation loss plateaus after an epoch
         # 2. pick the model with the lowest validation loss
 
-        checkpoint = ModelCheckpoint(weights_path + 'CheXNet.h5', monitor='loss', verbose=1,
+        checkpoint = ModelCheckpoint(weights_path + 'weights.{epoch:02d}-{loss:.2f}.hdf2', monitor='loss', verbose=1,
                                      save_best_only=True, save_weights_only=True, mode='min')
         reduceLROnPlat = ReduceLROnPlateau(monitor='loss', factor=self.decay_factor, verbose=1)
 
         callbacks = [checkpoint, reduceLROnPlat]
 
-        model.fit(train_generator,
+        history = model.fit(train_generator,
                     steps_per_epoch=self.train_steps,
                     epochs=epochs,
                     callbacks=callbacks,
                     validation_data=val_generator,
                     validation_steps=self.val_steps)
+
+        return history
 
     def accuracy(self, test_data_path, class_map):
     	test_datagen = ImageDataGenerator(preprocessing_function=self.imagenet_preproc)
@@ -167,7 +168,7 @@ class CheXNet:
 
     	# 1
     	print('\tMethod 1:')
-    	model.evaluate(test_generator)
+    	print(model.evaluate(test_generator))
 
     	# 2
     	print('\tMethod 2:')
@@ -199,7 +200,10 @@ if __name__ == '__main__':
 
     # Train the model
     print('\n\tTraining model:')
-    chexNet.train(train_data_path, val_data_path, epochs, weights_path, class_map)
+    history = chexNet.train(train_data_path, val_data_path, epochs, weights_path, class_map)
+
+    print('\n\tTraining history:')
+    history.history
 
     print('\n\tTest accuracy:')
     chexNet.accuracy(test_data_path, class_map)
