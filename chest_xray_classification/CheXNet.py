@@ -158,10 +158,14 @@ class CheXNet:
         return history
 
     def accuracy(self, test_data_path, class_map):
+        class_names = [0] * len(class_map)
+        for key, value in class_map.items():
+            class_names[key] = value
+
     	test_datagen = ImageDataGenerator(preprocessing_function=self.imagenet_preproc)
     	test_generator = test_datagen.flow_from_directory(
             		test_data_path,
-            		classes=class_map,
+            		classes=class_names,
             		target_size=(self.input_size, self.input_size),
             		batch_size=self.val_batch_size,
             		class_mode='binary')
