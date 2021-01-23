@@ -161,7 +161,7 @@ class CheXNet:
     	test_datagen = ImageDataGenerator(preprocessing_function=self.imagenet_preproc)
     	test_generator = test_datagen.flow_from_directory(
             		test_data_path,
-            		classes=class_names,
+            		classes=class_map,
             		target_size=(self.input_size, self.input_size),
             		batch_size=self.val_batch_size,
             		class_mode='binary')
