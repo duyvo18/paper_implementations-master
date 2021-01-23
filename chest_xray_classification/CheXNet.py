@@ -164,25 +164,24 @@ class CheXNet:
 
     	test_datagen = ImageDataGenerator(preprocessing_function=self.imagenet_preproc)
     	test_generator = test_datagen.flow_from_directory(
-            		test_data_path,
-            		classes=class_names,
-            		target_size=(self.input_size, self.input_size),
-            		batch_size=self.val_batch_size,
-            		class_mode='binary')
-        # 1
-        print('\tMethod 1:')
-        print(model.evaluate(test_generator))
+    		test_data_path,
+    		classes=class_names,
+    		target_size=(self.input_size, self.input_size),
+    		batch_size=self.val_batch_size,
+    		class_mode='binary')
 
-    	# 2
+    	print('\tMethod 1:')
+    	print(model.evaluate(test_generator))
+
     	print('\tMethod 2:')
     	test_accuracy = Accuracy()
 
     	for (x, y) in test_generator:
-        	logits = Model(inputs= x, training=False)
-        	prediction = math.argmax(logits, axis=1, output_type=int32)
-        	test_accuracy(prediction, y)
+    		logits = Model(inputs=x, training=False)
+    		prediction = math.argmax(logits, axis=1, output_type=int32)
+    		test_accuracy(prediction, y)
 
-    	print("Test set accuracy: {:.3%}".format(test_accuracy.result()))
+    	print('Test set accuracy: {:.3%}'.format(test_accuracy.result()))
 
 
 if __name__ == '__main__':
