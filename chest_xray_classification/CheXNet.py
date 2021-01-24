@@ -142,7 +142,7 @@ class CheXNet:
         # time the validation loss plateaus after an epoch
         # 2. pick the model with the lowest validation loss
 
-        checkpoint = ModelCheckpoint(weights_path + 'weights.{epoch:02d}-{loss:.2f}.hdf2', monitor='loss', verbose=1,
+        checkpoint = ModelCheckpoint(weights_path, monitor='loss', verbose=1,
                                      save_best_only=True, save_weights_only=True, mode='min')
         reduceLROnPlat = ReduceLROnPlateau(monitor='loss', factor=self.decay_factor, verbose=1)
 
@@ -190,7 +190,7 @@ if __name__ == '__main__':
     test_data_path = '/content/drive/MyDrive/SC203 _ Group 09/Dataset/CheXpert-v1.0-2_labels/Test/'
     class_map = {0:'NORMAL', 1:'PNEUMONIA'}
     epochs = 50
-    weights_path = '/content/drive/MyDrive/SC203 _ Group 09/VinGPan/weights/'
+    weights_path = '/content/drive/MyDrive/SC203 _ Group 09/VinGPan/weights/checkpoint'
 
     chexNet = CheXNet()
     # Compute normal Vs Pneumonia class distribution
