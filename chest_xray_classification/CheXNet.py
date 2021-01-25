@@ -212,10 +212,9 @@ if __name__ == '__main__':
 
     # Train the model
     print('\n\tTraining model:')
-    history = chexNet.train(train_data_path, val_data_path, epochs, weights_path, class_map)
+    chexNet.train(train_data_path, val_data_path, epochs, weights_path, class_map)
 
     print('\n\tTraining history:')
-    history.history
 
     print('\n\tTest accuracy:')
     chexNet.accuracy(test_data_path, class_map)
