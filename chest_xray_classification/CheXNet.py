@@ -13,7 +13,7 @@ from keras.models import Model
 from keras.layers import Dense, Input, GlobalAveragePooling2D
 from keras.preprocessing.image import ImageDataGenerator
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
-from keras.metrics import Accuracy
+from keras.metrics import BinaryAccuracy
 import glob
 
 
@@ -27,7 +27,7 @@ class CheXNet:
         self.batch_size = 16
         self.decay_factor = 1.0/10.0
 
-        self.val_batch_size = 32  # This can be set any convenient value as per GPU capacity
+        self.val_batch_size = 64  # This can be set any convenient value as per GPU capacity
 
         # Following will be set by get_data_stats() based on the dataset
         self.w_class0 = None
@@ -87,7 +87,10 @@ class CheXNet:
         loss = WeightedBinaryLoss(self.w_class0, self.w_class1)
 
         # Note: default learning rate of 'adam' is 0.001 as required by the paper
-        self.model.compile(optimizer='adam', loss=loss.compute_loss)
+        self.model.compile(optimizer='adam',
+        				loss=loss.compute_loss,
+        				metrics=['accuracy'])
+
         return self.model
 
     @staticmethod
@@ -142,20 +145,27 @@ class CheXNet:
         # time the validation loss plateaus after an epoch
         # 2. pick the model with the lowest validation loss
 
-        checkpoint = ModelCheckpoint(weights_path, monitor='loss', verbose=1,
-                                     save_best_only=True, save_weights_only=True, mode='min')
-        reduceLROnPlat = ReduceLROnPlateau(monitor='loss', factor=self.decay_factor, verbose=1)
+        checkpoint = ModelCheckpoint(filepath=weights_path,
+        							monitor='loss',
+        							verbose=1,
+                                    save_best_only=True,
+                                    save_weights_only=False,
+                                    mode='min')
+        reduceLROnPlat = ReduceLROnPlateau(monitor='loss',
+        									factor=self.decay_factor,
+        									patience=5,
+        									verbose=1,
+        									mode='min',
+        									)
 
         callbacks = [checkpoint, reduceLROnPlat]
 
-        history = model.fit(train_generator,
+        self.model.fit(train_generator,
                     steps_per_epoch=self.train_steps,
                     epochs=epochs,
                     callbacks=callbacks,
                     validation_data=val_generator,
                     validation_steps=self.val_steps)
-
-        return history
 
     def accuracy(self, test_data_path, class_map):
     	class_names = [0] * len(class_map)
@@ -167,21 +177,21 @@ class CheXNet:
     		test_data_path,
     		classes=class_names,
     		target_size=(self.input_size, self.input_size),
-    		batch_size=self.val_batch_size,
+    		batch_size=50,
     		class_mode='binary')
 
     	print('\tMethod 1:')
-    	print(model.evaluate(test_generator))
+    	print(self.model.evaluate(test_generator))
 
     	print('\tMethod 2:')
-    	test_accuracy = Accuracy()
-
+    	test_accuracy = BinaryAccuracy()
+    	
     	for (x, y) in test_generator:
-    		logits = Model(inputs=x, training=False)
+    		logits = self.model(x)
     		prediction = math.argmax(logits, axis=1, output_type=int32)
-    		test_accuracy(prediction, y)
-
-    	print('Test set accuracy: {:.3%}'.format(test_accuracy.result()))
+    		test_accuracy.update_state(prediction, y)
+		
+		print(test_accuracy.result())
 
 
 if __name__ == '__main__':
