@@ -185,13 +185,13 @@ class CheXNet:
 
     	print('\tMethod 2:')
     	test_accuracy = BinaryAccuracy()
-    	
+
     	for (x, y) in test_generator:
     		logits = self.model(x)
     		prediction = math.argmax(logits, axis=1, output_type=int32)
     		test_accuracy.update_state(prediction, y)
-		
-		print(test_accuracy.result())
+
+    	print(test_accuracy.result())
 
 
 if __name__ == '__main__':
