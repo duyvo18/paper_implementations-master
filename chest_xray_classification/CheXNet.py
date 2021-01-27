@@ -77,7 +77,9 @@ class CheXNet:
         input = Input(shape=(self.input_size, self.input_size, 3))
 
         base_pretrained_model = densenet.DenseNet121(input_shape=(self.input_size, self.input_size, 3),
-                                                     input_tensor=input, include_top=False, weights='imagenet')
+                                                     input_tensor=input,
+                                                     include_top=False,
+                                                     weights='imagenet')
         x = GlobalAveragePooling2D()(base_pretrained_model.layers[-1].output)
         x = Dense(self.output_classes, activation='sigmoid')(x)
 
@@ -88,8 +90,8 @@ class CheXNet:
 
         # Note: default learning rate of 'adam' is 0.001 as required by the paper
         self.model.compile(optimizer='adam',
-        				loss=loss.compute_loss,
-        				metrics=['accuracy'])
+        				   loss=loss.compute_loss,
+        				   metrics=['accuracy'])
 
         return self.model
 
@@ -125,20 +127,18 @@ class CheXNet:
         # 2. Use random horizontal flipping for augmenting
         # 3. normalize based on the mean and standard deviation of images in the ImageNet training set
         train_datagen = ImageDataGenerator(preprocessing_function=self.imagenet_preproc)
-        train_generator = train_datagen.flow_from_directory(
-            train_data_path,
-            classes=class_names,
-            target_size=(self.input_size, self.input_size),
-            batch_size=self.batch_size,
-            class_mode='binary')
+        train_generator = train_datagen.flow_from_directory(train_data_path,
+                                                            classes=class_names,
+                                                            target_size=(self.input_size, self.input_size),
+                                                            batch_size=self.batch_size,
+                                                            class_mode='binary')
         
         val_datagen = ImageDataGenerator(preprocessing_function=self.imagenet_preproc)
-        val_generator = val_datagen.flow_from_directory(
-            val_data_path,
-            classes=class_names,
-            target_size=(self.input_size, self.input_size),
-            batch_size=self.val_batch_size,
-            class_mode='binary')
+        val_generator = val_datagen.flow_from_directory(val_data_path,
+                                                        classes=class_names,
+                                                        target_size=(self.input_size, self.input_size),
+                                                        batch_size=self.val_batch_size,
+                                                        class_mode='binary')
 
         # Paper suggests following:
         # 1. use an initial learning rate of 0.001 that is decayed by a factor of 10 each
@@ -155,17 +155,16 @@ class CheXNet:
         									factor=self.decay_factor,
         									patience=5,
         									verbose=1,
-        									mode='min',
-        									)
+        									mode='min')
 
         callbacks = [checkpoint, reduceLROnPlat]
 
         self.model.fit(train_generator,
-                    steps_per_epoch=self.train_steps,
-                    epochs=epochs,
-                    callbacks=callbacks,
-                    validation_data=val_generator,
-                    validation_steps=self.val_steps)
+                       steps_per_epoch=self.train_steps,
+                       epochs=epochs,
+                       callbacks=callbacks,
+                       validation_data=val_generator,
+                       validation_steps=self.val_steps)
 
     def accuracy(self, test_data_path, class_map):
     	class_names = [0] * len(class_map)
@@ -173,12 +172,11 @@ class CheXNet:
     		class_names[key] = value
 
     	test_datagen = ImageDataGenerator(preprocessing_function=self.imagenet_preproc)
-    	test_generator = test_datagen.flow_from_directory(
-    		test_data_path,
-    		classes=class_names,
-    		target_size=(self.input_size, self.input_size),
-    		batch_size=50,
-    		class_mode='binary')
+    	test_generator = test_datagen.flow_from_directory(test_data_path,
+    		                                              classes=class_names,
+    		                                              target_size=(self.input_size, self.input_size),
+    		                                              batch_size=50,
+    		                                              class_mode='binary')
 
     	print('\tMethod 1:')
     	print(self.model.evaluate(test_generator))
@@ -213,8 +211,6 @@ if __name__ == '__main__':
     # Train the model
     print('\n\tTraining model:')
     chexNet.train(train_data_path, val_data_path, epochs, weights_path, class_map)
-
-    print('\n\tTraining history:')
 
     print('\n\tTest accuracy:')
     chexNet.accuracy(test_data_path, class_map)
